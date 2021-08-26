@@ -16,35 +16,64 @@ from statistics import mode
 from scipy.signal import find_peaks
 import math
 
-#Function to calculate auto-correlation of x
 def autocorr(x):
+    """
+    Function to calculate auto-correlation of time serie x between time 0 and T_max where T_max is the ending time of x.
+    :param x: list or 1-D numpy array
+    :return: 1-D numpy array
+    """
     result = np.correlate(x, x, mode='full')
-    result = result[int(result.size/2):]
+    result = result[int(result.size/2):]    # remove negative time delays
     return result/np.max(result)
 
-#Function to calculate cross-correlation of x and y
 def Xcorr(x, y):
+    """
+    Function to calculate auto-correlation of time series x and y between time 0 and T_max where T_max is the ending time of x.
+    :param x: list or 1-D numpy array
+    :param y: list or 1-D numpy array
+    :return: 1-D numpy array
+    """
     result = np.correlate(x, y, mode='full')
-    result = result[int(result.size/2):]
+    result = result[int(result.size/2):]    # remove negative time delays
     return result/np.max(result)
 
-#Function to calculate cross-correlation of x and y. The difference between Xcorr and Xcorr_LR is that the former returns half of the 
-# correlation result (only the positive time delay values)
 def Xcorr_LR(x, y):
+    """
+    Function to calculate auto-correlation of time series x and y between time -T_max and T_max where T_max is the ending time of x.
+    :param x: list or 1-D numpy array
+    :param y: list or 1-D numpy array
+    :return: 1-D numpy array
+    """
     result = np.correlate(x, y, mode='full')
     return result/np.max(result)
 
-#Function that returns the normalized cross-correlation
 def norm_Xcorr(x, y):
+    """
+    Function that returns the normalized cross-correlation of time series x and y between time -T_max and T_max 
+    where T_max is the ending time of x.
+    :param x: list or 1-D numpy array
+    :param y: list or 1-D numpy array
+    :return: 1-D numpy array
+    """
     # Normalised_CrossCorr = 1/N * sum{ [x(n) - mean(x)]* [y(n) - mean(y)] }/ (sqrt(var(x)*var(y))
     x_adjusted = x - np.mean(x)
     y_adjusted = y - np.mean(y)
     result = np.correlate(x_adjusted, y_adjusted, mode='full')/(len(x)*np.sqrt(np.var(x)*np.var(y)))
     return result
 
-#This function calculates the angle of the musculoskeletal model based on the VRMuscle and VLMuscle data
-# It also produces an animated plot of the musculoskeletal model
 def angles_(Time, nMuscle, nmax, VRMuscle, VLMuscle, dt, title = ''):
+    """
+    This function calculates the angle of the musculoskeletal model based on the VRMuscle and VLMuscle data.
+    It also produces an animated plot of the musculoskeletal model
+    :param Time: list or 1-D numpy array
+    :param nMuscle: int, number of segments in the musculoskeletal model
+    :param nmax: int, lenght of muscles time series
+    :param VRMuscle: list or 1-D numpy array
+    :param VLMuscle: list or 1-D numpy array
+    :param dt: float
+    :param title: string
+    :return: animated plot
+    """
     # Allocating arrays for velocity and position
     vel = np.zeros((nMuscle, nmax))
     pos = np.zeros((nMuscle, nmax))
@@ -118,8 +147,18 @@ def angles_(Time, nMuscle, nmax, VRMuscle, VLMuscle, dt, title = ''):
     plt.show()
     return ani
 
-#This function calculates the heatmap of the body angles as calculated by VLMuscle and VRMuscle
 def Heatmap(VLMuscle, VRMuscle, dt=0.1, vmin_=-0.5, vmax_=0.5, ymin=0, ymax=1000):
+     """
+    This function calculates the heatmap of the body angles as calculated by VLMuscle and VRMuscle.
+    :param VRMuscle: list or 1-D numpy array
+    :param VLMuscle: list or 1-D numpy array
+    :param dt: float, default=0.1
+    :param vmin_: float, default=-0.5
+    :param vmax_: float, default=0.5
+    :param ymin: float, default=0
+    :param ymax: float, default=1000
+    :return: body angle matrix of dimension (nmax, nMuscle) and FFT of body angle matrix
+    """
 
     nmax = len(VLMuscle[0,:])
     nMuscle = len(VLMuscle[:,0])
@@ -190,39 +229,58 @@ def Heatmap(VLMuscle, VRMuscle, dt=0.1, vmin_=-0.5, vmax_=0.5, ymin=0, ymax=1000
 
     return(pos2, FFT2)
 
-#This function smoothes y by convolving using a box
+
 def smooth(y, box_pts):
+    """
+    This function smoothes y time serie by convolving using a box.
+    :param y: list or 1-D numpy array
+    :param box_pts: int, lenght of the box for convolution
+    :return: 1-D numpy array
+    """
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
-#This function calculates the start, end and duration of swimming episode, as defined by a threshold
-def detect_event(VLMuscle, VRMuscle, threshold):
+# This function is superflueous
+# def detect_event(VLMuscle, VRMuscle, threshold):
+#     """
+#    This function calculates the start, end and duration of swimming episode, as defined by a threshold.
+#     :param VLMuscle: list or 1-D numpy array
+#     :param VRMuscle: list or 1-D numpy array
+#     :param threshold: float
+#     :return: three 1-D numpy array with starting times, ending times and durations of the detected events.
+#     """
+#     X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
+#     X = smooth(X, 500) #convolve with a step 50 ms wide
+#     Xt = Time[np.where(X > threshold)]
     
-    X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
-    X = smooth(X, 500) #convolve with a step 50 ms wide
-    Xt = Time[np.where(X > threshold)]
+#     plt.plot(Time, X)
+#     plt.axhline(y=threshold, ls='--', c='r')
+#     plt.xlabel('Time (ms)')
+#     plt.ylabel('Integrated motor output (arbitrary units)')
     
-    plt.plot(Time, X)
-    plt.axhline(y=threshold, ls='--', c='r')
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Integrated motor output (arbitrary units)')
+#     plt.rcParams.update({'font.size': 22})
     
-    plt.rcParams.update({'font.size': 22})
-    
-    if not any(Xt):
-        end =[]
-        start=[]
-        duration = []
-    else:
-        end = Xt[[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]+[True]]
-        start = Xt[[True]+[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]]
-        duration = end - start
+#     if not any(Xt):
+#         end =[]
+#         start=[]
+#         duration = []
+#     else:
+#         end = Xt[[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]+[True]]
+#         start = Xt[[True]+[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]]
+#         duration = end - start
         
-    return start, end, duration
+#     return start, end, duration
 
-#This function calculates the start, end and duration of swimming episode, as defined by a threshold
 def detect_event(VLMuscle, VRMuscle, Time, Threshold):
+    """
+   This function calculates the start, end and duration of swimming episode, as defined by a threshold.
+    :param VLMuscle: list or 1-D numpy array
+    :param VRMuscle: list or 1-D numpy array
+    :param Time: list or 1-D numpy array
+    :param threshold: float
+    :return: three 1-D numpy array with starting times, ending times and durations of the detected events.
+    """
     
     X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
     X = smooth(X, 500) #convolve with a step 50 ms wide
@@ -243,8 +301,16 @@ def detect_event(VLMuscle, VRMuscle, Time, Threshold):
     
     return start, end, duration
 
-#This function calculates the start, end and duration of swimming episode, as defined by a threshold. Does not plot the result
 def detect_event_no_plot(VLMuscle, VRMuscle, Time, Threshold):
+    """
+    This function calculates the start, end and duration of swimming episode, as defined by a threshold. 
+    Does not plot the result
+    :param VLMuscle: list or 1-D numpy array
+    :param VRMuscle: list or 1-D numpy array
+    :param Time: list or 1-D numpy array
+    :param threshold: float
+    :return: three 1-D numpy array with starting times, ending times and durations of the detected events.
+    """
     
     X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
     X = smooth(X, 500) #convolve with a step 50 ms wide
@@ -262,9 +328,20 @@ def detect_event_no_plot(VLMuscle, VRMuscle, Time, Threshold):
     
     return start, end, duration
 
-#This plot takes the VLMN and VRMN output and calculates the muscle output based upon R, C and weight of MN to Muscle connection 
-# that are arguments of the function. Returns VLMuscle and VRMuscle
 def recalc_muscle_ouptut(VLMN, VRMN, Time, dt, nMN, nMuscle, R, C, weight_MN_Muscle):
+    """
+    This function takes the VLMN and VRMN output and calculates the muscle output based upon R, C and weight of MN to Muscle connection 
+    :param VLMN: list or 1-D numpy array
+    :param VRMN: list or 1-D numpy array
+    :param Time: list or 1-D numpy array
+    :param dt: float, time step
+    :param nMN: int, number of motor neuron for the hemicord.
+    :param nMuscle: int, number of muscle segments.
+    :param R: float, resistance of muscle cells
+    :param C: float, capacitance of muscle cells
+    :param weight_MN_Muscle: int, number of muscle segments.
+    :return: Two numpy arrays of dimension (nMuscle, len(Time)) for Left and Right muscle cells
+    """
 
     nmax = len(Time)
     
@@ -341,14 +418,42 @@ def recalc_muscle_ouptut(VLMN, VRMN, Time, dt, nMN, nMuscle, R, C, weight_MN_Mus
 
 
 def phase_relationship(X, Y, Time):
+    """
+    Where is find_peaks defined?
+    """
     X_peak = find_peaks(X, height=[-20,], threshold=None, distance=None, prominence=1, width=None, wlen=None, rel_height=0.5, plateau_size=None)
     Y_peak = find_peaks(Y, height=[-20,], threshold=None, distance=None, prominence=1, width=None, wlen=None, rel_height=0.5, plateau_size=None)
     
     return phase_rel
 
-#This function calculates tail beat frequency based upon crossings of y = 0 as calculated from the body angles calculated
-# by VRMuscle and VLMuscle
+def check_all_in(the_lower_bound, the_upper_bound, alist):
+    """
+    This function tells if each element of a list are above or below some bounds
+    :param lower_bound: int, bound used to discriminate swimming tail beats from noise
+    :param upper_bound: int, bound used to discriminate swimming tail beats from noise
+    :param alist: list or 1-D numpy array
+    :return: boolean
+    """
+    in_list = True
+    for i in range(0, len(alist)): 
+        if alist[i] < the_lower_bound or alist[i] > the_upper_bound:
+            in_list = False
+    return in_list
+    
 def calc_tail_beat_freq(VRMuscle, VLMuscle, nmax, dt, lower_bound, upper_bound, delay):
+    
+    """
+    This function calculates tail beat frequency based upon crossings of y = 0 as calculated from the body angles calculated
+    by VRMuscle and VLMuscle
+    :param VRMuscle: list or 1-D numpy array
+    :param VLMuscle: list or 1-D numpy array
+    :param nmax: int, length of Time array
+    :param dt: float, time step
+    :param lower_bound: int, bound used to discriminate swimming tail beats from noise
+    :param upper_bound: int, bound used to discriminate swimming tail beats from noise
+    :param delay: float, defines the time window during wich we consider tail beats
+    :return: Four 1-D numpy arrays for number of tail beats, interbeat time intervals, start times and beat times
+    """
     
     ### Calculate angles
 
@@ -401,13 +506,6 @@ def calc_tail_beat_freq(VRMuscle, VLMuscle, nmax, dt, lower_bound, upper_bound, 
     # We will only use the tip of the tail to determine tail beats (if the x coordinate of the tip is smaller (or more negative)
     # than the lower bound or if the x coordinate of the tip is greater than the upper bound, then detect as a tail beat
     tail_tip_x = x[nMuscle-1, :]
-
-    def check_all_in(the_lower_bound, the_upper_bound, alist):
-        in_list = True
-        for i in range(0, len(alist)): 
-            if alist[i] < the_lower_bound or alist[i] > the_upper_bound:
-                in_list = False
-        return in_list
 
     Between_episodes = 1
     num_tail_beats=[]

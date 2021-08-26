@@ -241,36 +241,35 @@ def smooth(y, box_pts):
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
-# This function is superflueous
-# def detect_event(VLMuscle, VRMuscle, threshold):
-#     """
-#    This function calculates the start, end and duration of swimming episode, as defined by a threshold.
-#     :param VLMuscle: list or 1-D numpy array
-#     :param VRMuscle: list or 1-D numpy array
-#     :param threshold: float
-#     :return: three 1-D numpy array with starting times, ending times and durations of the detected events.
-#     """
-#     X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
-#     X = smooth(X, 500) #convolve with a step 50 ms wide
-#     Xt = Time[np.where(X > threshold)]
+def detect_event(VLMuscle, VRMuscle, threshold):
+     """
+    This function calculates the start, end and duration of swimming episode, as defined by a threshold.
+     :param VLMuscle: list or 1-D numpy array
+     :param VRMuscle: list or 1-D numpy array
+     :param threshold: float
+     :return: three 1-D numpy array with starting times, ending times and durations of the detected events.
+     """
+     X = np.sum(VLMuscle, axis=0) + np.sum(VRMuscle, axis=0)
+     X = smooth(X, 500) #convolve with a step 50 ms wide
+     Xt = Time[np.where(X > threshold)]
+   
+     plt.plot(Time, X)
+     plt.axhline(y=threshold, ls='--', c='r')
+     plt.xlabel('Time (ms)')
+     plt.ylabel('Integrated motor output (arbitrary units)')
     
-#     plt.plot(Time, X)
-#     plt.axhline(y=threshold, ls='--', c='r')
-#     plt.xlabel('Time (ms)')
-#     plt.ylabel('Integrated motor output (arbitrary units)')
+     plt.rcParams.update({'font.size': 22})
     
-#     plt.rcParams.update({'font.size': 22})
-    
-#     if not any(Xt):
-#         end =[]
-#         start=[]
-#         duration = []
-#     else:
-#         end = Xt[[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]+[True]]
-#         start = Xt[[True]+[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]]
-#         duration = end - start
+     if not any(Xt):
+         end =[]
+         start=[]
+         duration = []
+     else:
+         end = Xt[[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]+[True]]
+         start = Xt[[True]+[Xt[i+1] - Xt[i] > 0.2 for i in range(len(Xt)-1)]]
+         duration = end - start
         
-#     return start, end, duration
+     return start, end, duration
 
 def detect_event(VLMuscle, VRMuscle, Time, Threshold):
     """
@@ -415,16 +414,6 @@ def recalc_muscle_ouptut(VLMN, VRMN, Time, dt, nMN, nMuscle, R, C, weight_MN_Mus
             VRMuscle[k,t] = resRMuscle[k,0]
             
     return VLMuscle, VRMuscle
-
-
-def phase_relationship(X, Y, Time):
-    """
-    Where is find_peaks defined?
-    """
-    X_peak = find_peaks(X, height=[-20,], threshold=None, distance=None, prominence=1, width=None, wlen=None, rel_height=0.5, plateau_size=None)
-    Y_peak = find_peaks(Y, height=[-20,], threshold=None, distance=None, prominence=1, width=None, wlen=None, rel_height=0.5, plateau_size=None)
-    
-    return phase_rel
 
 def check_all_in(the_lower_bound, the_upper_bound, alist):
     """

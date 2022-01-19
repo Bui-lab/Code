@@ -1,4 +1,4 @@
-Directory for code for models for zebrafish spinal locomotor circuits
+Directory for code for models for zebrafish spinal locomotor circuits. IT IS RECOMMENDED THAT YOU USE VERSION 2 INSTEAD
 
 This code was the version used for Roussel et al. 2021 published in eLife.
 

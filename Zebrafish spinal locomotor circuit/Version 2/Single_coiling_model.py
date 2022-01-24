@@ -374,7 +374,7 @@ class Single_coil_base:
         self.LD_MN_MN = zeros((self.nMN,self.nMN))
         self.LD_MN_V0d = zeros((self.nMN,self.nV0d))
         self.LD_V0d_V0d = zeros((self.nV0d,self.nV0d))
-        self.LD_V0d_IC = zeros((self.nV0d,self.nV0d))
+        self.LD_V0d_IC = zeros((self.nV0d,self.nIC))
         self.LD_V0d_MN = zeros((self.nV0d,self.nMN))
 
         self.RD_IC_MN = zeros((self.nIC, self.nMN))
@@ -382,7 +382,7 @@ class Single_coil_base:
         self.RD_MN_MN = zeros((self.nMN,self.nMN))
         self.RD_MN_V0d = zeros((self.nMN,self.nV0d))
         self.RD_V0d_V0d = zeros((self.nV0d,self.nV0d))
-        self.RD_V0d_IC = zeros((self.nV0d,self.nV0d))
+        self.RD_V0d_IC = zeros((self.nV0d,self.nIC))
         self.RD_V0d_MN = zeros((self.nV0d,self.nMN))
 
         ## Compute distance between Neurons
